@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>多窗口温馨提示</title>
+    <style>
+        /* 弹窗样式：固定定位、置顶、随机色+圆角 */
+        .tip-window {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 250px;
+            height: 100px;
+            padding: 15px;
+            box-sizing: border-box;
+            border-radius: 8px;
+            font-family: "微软雅黑", sans-serif;
+            font-size: 16px;
+            text-align: center;
+            line-height: 70px; /* 文字垂直居中 */
+            z-index: 9999; /* 确保窗口在最上层 */
+            cursor: default; /* 鼠标样式 */
+        }
+        /* 提示文本样式 */
+        .tip-content {
+            color: #333;
+            font-weight: 500;
+        }
+        /* 页面说明文本样式 */
+        .instructions {
+            font-family: "微软雅黑", sans-serif;
+            font-size: 14px;
+            color: #666;
+            margin: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="instructions">
+        说明：5秒内陆续弹出50个窗口 | F键：关闭当前选中窗口（点击窗口获取焦点） | Enter键：关闭所有窗口并刷新页面
+    </div>
+
+    <script>
+        // 全局数组：记录所有弹窗对象
+        const allWindows = [];
+        // 提示语列表
+        const tips = [
+            '多喝水哦~', '保持微笑呀', '每天都要元气满满',
+            '记得吃水果', '保持好心情', '好好爱自己', '我想你了',
+            '梦想成真', '期待下一次见面', '金榜题名',
+            '顺顺利利', '早点休息', '愿所有烦恼都消失',
+            '别熬夜', '今天过得开心嘛', '天冷了，多穿衣服'
+        ];
+        // 背景色列表
+        const bgColors = [
+            'lightpink', 'skyblue', 'lightgreen', 'lavender',
+            'lightyellow', 'plum', 'coral', 'bisque', 'aquamarine',
+            'mistyrose', 'honeydew', 'lavenderblush', 'oldlace'
+        ];
+
+        // 1. 创建单个弹窗的函数
+        function createTipWindow(index) {
+            // 创建弹窗div
+            const window = document.createElement('div');
+            window.className = 'tip-window';
+            window.setAttribute('tabindex', '0'); // 让div可获取焦点（支持键盘事件）
+            
+            // 随机位置：避免重叠（基于屏幕宽高计算）
+            const screenWidth = window.innerWidth;
+            const screenHeight = window.innerHeight;
+            const windowWidth = 250;
+            const windowHeight = 100;
+            const x = Math.floor(Math.random() * (screenWidth - windowWidth));
+            const y = Math.floor(Math.random() * (screenHeight - windowHeight));
+            window.style.left = `${x}px`;
+            window.style.top = `${y}px`;
+
+            // 随机背景色和提示语
+            const randomBg = bgColors[Math.floor(Math.random() * bgColors.length)];
+            const randomTip = tips[Math.floor(Math.random() * tips.length)];
+            window.style.backgroundColor = randomBg;
+            
+            // 弹窗内容（带序号）
+            const content = document.createElement('div');
+            content.className = 'tip-content';
+            content.innerText = `温馨提示-${index}：${randomTip}`;
+            window.appendChild(content);
+
+            // 添加到页面和全局数组
+            document.body.appendChild(window);
+            allWindows.push(window);
+
+            // 绑定F键关闭当前窗口
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'f' || e.key === 'F') {
+                    window.remove(); // 从页面删除
+                    const idx = allWindows.indexOf(window);
+                    allWindows.splice(idx, 1); // 从数组移除
+                }
+            });
+        }
+
+        // 2. 循环创建50个弹窗（用setTimeout模拟延迟，替代Python线程）
+        function create50Windows() {
+            for (let i = 1; i <= 50; i++) {
+                // 每0.1秒创建一个，5秒内完成（可调整延迟时间）
+                setTimeout(() => createTipWindow(i), i * 100);
+            }
+        }
+
+        // 3. 绑定Enter键关闭所有窗口
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                allWindows.forEach(win => win.remove()); // 关闭所有弹窗
+                allWindows.length = 0; // 清空数组
+                // 可选：刷新页面恢复初始状态
+                // location.reload();
+            }
+        });
+
+        // 页面加载完成后，开始创建弹窗
+        window.onload = create50Windows;
+    </script>
+</body>
+</html>
